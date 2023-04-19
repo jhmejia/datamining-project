@@ -1,5 +1,5 @@
 
-
+# Function to pre process the tornado dataset file given the filepath. 
 def preprocess(file_path):
     # Get libraries
     import pandas as pd
