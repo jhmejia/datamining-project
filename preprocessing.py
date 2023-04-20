@@ -35,6 +35,8 @@ def preprocess(file_path):
 
     df = df.rename(columns={'mo': 'season'})
 
+    # One hot encode season column
+    df = pd.get_dummies(df, columns=['season'])
     
 
     # Combine fatalities and injuries into one column
@@ -48,11 +50,17 @@ def preprocess(file_path):
 
     # If ending elat is 0, replace with slat. (unknown ending lat)
 
-    #df['elat'] = df['elat'].replace(0, df['slat'])
+    # Same with elon
 
-    # If ending elon is 0, replace with slon. (unknown ending lon)
 
-    #df['elon'] = df['elon'].replace(0, df['slon'])
+    # Replace values in 'elat' column that are equal to 0 with values from 'slat' column
+    df['elat'] = df['elat'].mask(df['elat'] == 0, df['slat'])
+
+    # Replace values in 'elon' column that are equal to 0 with values from 'slon' column
+    df['elon'] = df['elon'].mask(df['elon'] == 0, df['slon'])
+
+
+
 
     # If magnitude is -9, replace with the average magnitude of the ones that are not -9
 
