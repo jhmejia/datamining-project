@@ -11,7 +11,6 @@
 dataset <- read.csv("us_tornado_dataset_1950_2021.csv")
 
 
-
 # Drop the 'st' column (lat long cover it) (the 3rd column)
 dataset = subset(dataset, select = -c(st))
 
@@ -83,6 +82,13 @@ dataset$mag[is.na(dataset$mag)] = mag_avg
 # Add "distance covered" column
 
 dataset$distance = acos(sin(dataset$slat)*sin(dataset$elat)+cos(dataset$slat)*cos(dataset$elat)*cos(dataset$elon-dataset$slon))*6371
+
+dataset$distance[dataset$distance == -0] = NA
+
+dist_avg = mean(dataset$distance, na.rm = TRUE)
+
+dataset$distance[is.na(dataset$distance)] = dist_avg
+
 
 
 # Get victims (fatalities + injuries)
