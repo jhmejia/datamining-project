@@ -5,7 +5,9 @@ Data mining group project
 ### Data sources
 https://www.kaggle.com/datasets/danbraswell/us-tornado-dataset-1950-2021
 
-https://www.kaggle.com/datasets/ppb00x/credit-risk-customers
+### Powerpoint link:
+
+https://docs.google.com/presentation/d/1Ae7d04Pap7eAnW7ZR66LsPgMOulGJdrMjFEyUkIzq1c/edit?usp=sharing
 
 
 
