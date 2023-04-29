@@ -11,8 +11,12 @@ random_forest <- function(training_set, test_set, dataset) {
                             data = training_set,
                             ntree = 100)
   
+  
+  
   # Create a grid of values for the length of the track
   x_grid <- seq(min(training_set$len), max(training_set$len), 0.1)
+  
+  
   
   # Plot the training data points and the predicted values from the random forest model
   ggplot() +
@@ -23,6 +27,13 @@ random_forest <- function(training_set, test_set, dataset) {
     ggtitle('Random Forest Regression') +
     xlab('Length of track') +
     ylab('Number of victims')
+  
+  
+  library(ggplot2)
+  
+  ggplot(data = training_set) +
+    geom_point(aes(x = slon, y = slat, color = mag)) +
+    geom_line(aes(x = slon, y = slat, color = mag, group = interaction(mag, season)))
   
 
     # Finding mean absolute error
