@@ -22,6 +22,10 @@ random_forest <- function(training_set, test_set, dataset) {
           y_pred <- predict(regressor, newdata = test_set)
           r_squared <- R2(y_pred, test_set$victims)
           results[[paste0("ntree_", ntree, "_mtry_", mtry, "_max_depth_", max_depth)]] <- r_squared
+
+          # Print R-squared and mean squared error values for each combination of hyperparameters
+          print(paste0("ntree = ", ntree, ", mtry = ", mtry, ", max_depth = ", max_depth,
+                       ", R-squared = ", r_squared))
         }
       }
     }
