@@ -81,13 +81,13 @@ dataset$mag[is.na(dataset$mag)] = mag_avg
 
 # Add "distance covered" column
 
-dataset$distance = acos(sin(dataset$slat)*sin(dataset$elat)+cos(dataset$slat)*cos(dataset$elat)*cos(dataset$elon-dataset$slon))*6371
-
-dataset$distance[dataset$distance == -0] = NA
-
-dist_avg = mean(dataset$distance, na.rm = TRUE)
-
-dataset$distance[is.na(dataset$distance)] = dist_avg
+# dataset$distance = acos(sin(dataset$slat)*sin(dataset$elat)+cos(dataset$slat)*cos(dataset$elat)*cos(dataset$elon-dataset$slon))*6371
+# 
+# dataset$distance[dataset$distance == -0] = NA
+# 
+# dist_avg = mean(dataset$distance, na.rm = TRUE)
+# 
+# dataset$distance[is.na(dataset$distance)] = dist_avg
 
 
 
@@ -102,15 +102,18 @@ dataset = subset(dataset, select = -c(inj, fat))
 
 # Splitting the dataset into the Training set and Test set
 
-library(caTools)
-set.seed(123)
-split = sample.split(dataset$wid, SplitRatio = 0.75)
-training_set = subset(dataset, split == TRUE)
-test_set = subset(dataset, split == FALSE)
 
-# Doing a random forest regression on the training set
+library(caTools)
 
 source("randomforest.R")
 
-random_forest(training_set, test_set, dataset)
+
+
+for (i in 1:5) {
+  # Do not set seed for splitting. 
+  split = sample.split(dataset$wid, SplitRatio = 0.80)
+  training_set = subset(dataset, split == TRUE)
+  test_set = subset(dataset, split == FALSE)
+  random_forest(training_set, test_set, dataset)
+}
 

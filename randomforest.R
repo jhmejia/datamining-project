@@ -1,3 +1,15 @@
+MSE <- function(y_pred, y_true) {
+  mean((y_pred - y_true)^2)
+}
+
+R2 <- function(y_pred, y_true) {
+  SS_res <- sum((y_true - y_pred)^2)
+  SS_tot <- sum((y_true - mean(y_true))^2)
+  1 - SS_res/SS_tot
+}
+
+
+
 random_forest <- function(training_set, test_set, dataset) {
 
     # Random Forest Regression
@@ -8,73 +20,44 @@ random_forest <- function(training_set, test_set, dataset) {
   library(plotly)
   library(caret)
   
-  # Function to tune random forest with different values of hyperparameters and calculate R-squared
-  tune_random_forest <- function(training_set, test_set, ntree_range, mtry_range, max_depth_range) {
-    results <- list()
-    for (ntree in ntree_range) {
-      for (mtry in mtry_range) {
-        for (max_depth in max_depth_range) {
-          regressor <- randomForest(formula = victims ~ .,
-                                    data = training_set,
-                                    ntree = ntree,
-                                    mtry = mtry,
-                                    max_depth = max_depth)
-          y_pred <- predict(regressor, newdata = test_set)
-          r_squared <- R2(y_pred, test_set$victims)
-          results[[paste0("ntree_", ntree, "_mtry_", mtry, "_max_depth_", max_depth)]] <- r_squared
+   # Do a random forest regression with 500 trees, and 4 variables tried at each split, 
+   # and a max depth of 4
 
-          # Print R-squared and mean squared error values for each combination of hyperparameters
-          print(paste0("ntree = ", ntree, ", mtry = ", mtry, ", max_depth = ", max_depth,
-                       ", R-squared = ", r_squared))
-        }
-      }
-    }
-    return(results)
-  }
-  
-  # Specify ranges of hyperparameters to test
-  ntree_range <- seq(50, 300, by = 50)
-  mtry_range <- seq(2, ncol(training_set) - 1, by = 2)
-  max_depth_range <- seq(2, 10, by = 2)
-  
-  # Call function to tune random forest and calculate R-squared for each combination of hyperparameters
-  results <- tune_random_forest(training_set, test_set, ntree_range, mtry_range, max_depth_range)
-  
-  # Convert results to data frame for plotting
-  result_df <- expand.grid(ntree = ntree_range, mtry = mtry_range, max_depth = max_depth_range)
-  result_df$r_squared <- unlist(results)
-  
-  # Plot R-squared vs hyperparameters using 3D surface plot
-  plot_ly(result_df, x = ~mtry, y = ~max_depth, z = ~r_squared, type = "surface",
-          colors = c("#d9f0a3", "#addd8e", "#78c679", "#41ab5d", "#238443", "#005a32")) %>%
-    layout(scene = list(xaxis = list(title = "mtry"),
-                        yaxis = list(title = "max_depth"),
-                        zaxis = list(title = "R-squared")))
-  
-  # Print best hyperparameters and corresponding R-squared value
-  best_hyperparameters <- result_df[which.max(result_df$r_squared), ]
-  best_ntree <- best_hyperparameters$ntree
-  best_mtry <- best_hyperparameters$mtry
-  best_max_depth <- best_hyperparameters$max_depth
-  best_r_squared <- best_hyperparameters$r_squared
-  print(paste0("Best hyperparameters:\nntree = ", best_ntree, "\nmtry = ", best_mtry,
-               "\nmax_depth = ", best_max_depth, "\nR-squared = ", best_r_squared))
-  
-  # Fit final random forest model using best hyperparameters
-  regressor <- randomForest(formula = victims ~ .,
-                            data = training_set,
-                            ntree = best_ntree,
-                            mtry = best_mtry,
-                            max_depth = best_max_depth)
-  y_pred <- predict(regressor, newdata = test_set)
-  
-  # Print R-squared and mean squared error values for final model
-  r_squared <- R2(y_pred, test_set$victims)
-  mse <- mean((y_pred - test_set$victims)^2)
-  print(paste0("Final model R-squared: ", r_squared))
-  print(paste0("Final model mean squared: ", mse))
+  regressor = randomForest(x = training_set[-1], y = training_set$victims, 
+  ntree = 500)
+
+  # Predicting the Test set results
+  y_pred = predict(regressor, newdata = test_set[-1])
+
+  # Show summary of y pred
+  print(summary(y_pred))
+
+  # Show head of y pred
+  print(head(y_pred))
+
+  # Show summary of regressor
+  print(summary(regressor))
 
 
+  # Visualising the Random Forest Regression results 
+  # (Show distance travelled vs. victims)
+  # (Have red points for y_true, and blue line for y_pred)
 
+  # Create a dataframe with the distance travelled and victims
+  # for the test set
+  test_set_df = test_set$width +  test_set$victims
+
+  # Rename th
+
+  # Show r^2 and MSE
+  r2 = R2(y_pred, test_set$victims)
+  mse = MSE(y_pred, test_set$victims)
+
+  print(paste("Random Forest Regression R^2: ", r2))
+  print(paste("Random Forest Regression MSE: ", mse))
+
+  return (list(r2 = r2, mse = mse, y_pred = y_pred, regressor = regressor))
 
 }
+
+
