@@ -47,11 +47,6 @@ known_mag = dataset$mag[dataset$mag != -9]
 avg_mag = mean(known_mag)
 dataset$mag[dataset$mag == -9] = avg_mag
 
-# add distance traveled column
-dataset$distance = acos(sin(dataset$slat)*sin(dataset$elat)+cos(dataset$slat)*cos(dataset$elat)*cos(dataset$elon-dataset$slon))*6371
-dataset$distance[dataset$distance == -0] = NA
-dist_avg = mean(dataset$distance, na.rm = TRUE)
-dataset$distance[is.na(dataset$distance)] = dist_avg
 
 #----------------------------------------------------------------------
 
@@ -69,7 +64,9 @@ library(e1071)
 regressor = svm(formula = vic ~ .,
                 data = training_set,
                 type = 'eps-regression',
-                kernel = 'radial')
+                kernel = 'radial',
+                tolerance = 0.1)
+
 # radial preforms best when compared to poly, sigmoid, and linear kernels
 #----------------------------------------------------------------------
 
@@ -83,18 +80,18 @@ y_pred = predict(regressor, newdata = test_set)
 #----------------------------------------------------------------------
 library(ggplot2)
 ggplot() +
-  geom_point(aes(x = test_set$distance, y = test_set$vic),
+  geom_point(aes(x = test_set$wid, y = test_set$vic),
              colour = 'red') +
-  geom_point(aes(x = test_set$distance, y = y_pred),
+  geom_point(aes(x = test_set$wid, y = y_pred),
              colour = 'blue') +
   ggtitle('SVR') +
-  xlab('Distance Traveled') +
+  xlab('Width') +
   ylab('Victims')
 #----------------------------------------------------------------------
 
 # Evaluating the Model Performance
 #----------------------------------------------------------------------
-num_of_ind_vars = 9
+num_of_ind_vars = 8
 ssr = sum((test_set$vic - y_pred) ^ 2)
 sst = sum((test_set$vic - mean(test_set$vic)) ^ 2)
 r2 = 1 - (ssr/sst)
@@ -104,9 +101,9 @@ print(r2_adjusted)
 
 # Recording r^2 and adjusted r^2
 #----------------------------------------------------------------------
-# Round 1: R^2 = 0.1889181, adjR^2 = 0.1884845
-# Round 2: R^2 = 0.2035471 , adjR^2 = 0.2031214
-# Round 3: R^2 = 0.1858136, adjR^2 = 0.1853784
-# Round 4: R^2 = 0.1623893, adjR^2 = 0.1619416
-# Round 5: R^2 = 0.1815108, adjR^2 = 0.1810733
+# Round 1: R^2 = 0.1899483, adjR^2 = 0.1895635
+# Round 2: R^2 = 0.1066539, adjR^2 = 0.1062295
+# Round 3: R^2 = 0.1540451, adjR^2 = 0.1536432
+# Round 4: R^2 = 0.1428268, adjR^2 = 0.1424196
+# Round 5: R^2 = 0.1794842, adjR^2 = 0.1790944
 #----------------------------------------------------------------------
