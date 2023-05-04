@@ -10,9 +10,9 @@ https://www.kaggle.com/datasets/danbraswell/us-tornado-dataset-1950-2021
 https://docs.google.com/presentation/d/1Ae7d04Pap7eAnW7ZR66LsPgMOulGJdrMjFEyUkIzq1c/edit?usp=sharing
 
 ## Models:
-[Polynomial w/ backwards elimination](polynomial.R)
-[Support Vector Machine](svr.R)
-[Random Forest Regression](randomforest.R)
+- [Polynomial w/ backwards elimination](polynomial.R)
+- [Support Vector Machine](svr.R)
+- [Random Forest Regression](randomforest.R)
 
 
 Data description:
