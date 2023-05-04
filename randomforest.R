@@ -11,24 +11,26 @@ MSE <- function(y_pred, y_true) {
   mean((y_pred - y_true)^2)
 }
 
-# R^2 and R^2 Adjusted function
+# R^2 Adjusted function
 R2_adjusted <- function(y_pred, y_true) {
   SS_res <- sum((y_true - y_pred)^2)
   SS_tot <- sum((y_true - mean(y_true))^2)
   R2= 1 - SS_res/SS_tot
-  print("R^2:")
-  print(R2)
   n = length(y_true)
   p = 1
   R2_adjusted = 1 - (1-R2)*(n-1)/(n-p-1)
   return(R2_adjusted)
 }
 
+#r^2 Function
+R2 <- function(y_pred, y_true) {
+  SS_res <- sum((y_true - y_pred)^2)
+  SS_tot <- sum((y_true - mean(y_true))^2)
+  1 - SS_res/SS_tot
+}
 
 # Random Forest Function
 random_forest <- function(training_set, test_set, dataset) {
-  
-  # install.packages('randomForest')
   
   library(randomForest)
   library(plotly)
@@ -53,24 +55,41 @@ random_forest <- function(training_set, test_set, dataset) {
   
   
   # Visualising the Random Forest Regression results
-  # (Show distance travelled vs. victims)
-  # (Have red points for y_true, and blue line for y_pred)
+  # (Show wid (width) vs. victims)
+  # (Have red points for y_true, and blue points for y_pred)
 
-  # Create a dataframe with the distance travelled and victims
-  # for the test set
-  test_set_df = test_set$width +  test_set$victims
-
-  
+ 
+ 
   # Show r^2 and MSE
   
-  r2 = R2_adjusted(y_pred, test_set$victims)
+  adj_r2 = R2_adjusted(y_pred, test_set$victims)
+  r2 = R2(y_pred, test_set$victims)
   mse = MSE(y_pred, test_set$victims)
   
-  print(paste("Random Forest Regression Adjusted R^2: ", r2))
+  print(paste("Random Forest Regression Adjusted R^2: ", adj_r2))
+  print(paste("Random Forest Regression R^2: ", r2))
   print(paste("Random Forest Regression MSE: ", mse))
   
-  return (list(r2 = r2, mse = mse, y_pred = y_pred, regressor = regressor))
   
+  
+  results <- data.frame(y_true = test_set$victims, y_pred = y_pred, wid = test_set$wid)
+  
+  
+  library(ggplot2)
+  
+  ggplot(results, aes(x = wid, y = y_true)) +
+    geom_point(color = "red") +
+    geom_point(aes(y = y_pred), color = "blue") +
+    labs(x = "wid", y = "victims")
+  
+  ggplot(results, aes(x = wid, y = y_true)) +
+    geom_point(color = "red") +
+    geom_point(aes(y = y_pred), color = "blue") +
+    labs(x = "wid", y = "victims") +
+    annotate("text", x = Inf, y = Inf, label = paste0("Adjusted R-squared = ", round(r2, 3)), hjust = 1, vjust = 1)
+
+
+    return (adj_r2, r2, mse)
 }
 
 
@@ -132,7 +151,6 @@ dataset$elon = ifelse(dataset$elon == 0, dataset$slon, dataset$elon)
 
 
 
-
 # If magnitude is -9, replace with the average magnitude of the ones that are not -9
 
 # get all rows where mag is not -9
@@ -146,20 +164,6 @@ mag_avg = mean(dataset$mag, na.rm = TRUE)
 # replace -9 with mag_avg
 
 dataset$mag[is.na(dataset$mag)] = mag_avg
-
-# Add "distance covered" column
-# =acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos(lon2-lon1))*6371
-
-# Add "distance covered" column
-
-# dataset$distance = acos(sin(dataset$slat)*sin(dataset$elat)+cos(dataset$slat)*cos(dataset$elat)*cos(dataset$elon-dataset$slon))*6371
-# 
-# dataset$distance[dataset$distance == -0] = NA
-# 
-# dist_avg = mean(dataset$distance, na.rm = TRUE)
-# 
-# dataset$distance[is.na(dataset$distance)] = dist_avg
-
 
 
 # Get victims (fatalities + injuries)
@@ -179,12 +183,35 @@ library(caTools)
 source("randomforest.R")
 
 
+# We will do 10 trials and take the average of the results
 
-for (i in 1:5) {
+
+
+adjr2s = c()
+r2s = c()
+mses = c()
+
+for (i in 1:10) {
   # Do not set seed for splitting. 
   split = sample.split(dataset$wid, SplitRatio = 0.80)
   training_set = subset(dataset, split == TRUE)
   test_set = subset(dataset, split == FALSE)
-  random_forest(training_set, test_set, dataset)
+
+  # Call random forest function, and append results to vectors
+  results = random_forest(training_set, test_set, dataset)
+  adjr2s = c(adjr2s, results[1])
+  r2s = c(r2s, results[2])
+  mses = c(mses, results[3])
 }
 
+# Take average of vectors
+
+adjr2_avg = mean(adjr2s)
+r2_avg = mean(r2s)
+mse_avg = mean(mses)
+
+# Print results
+
+print(paste("Random Forest Regression Adjusted R^2 Average: ", adjr2_avg))
+print(paste("Random Forest Regression R^2 Average: ", r2_avg))
+print(paste("Random Forest Regression MSE Average: ", mse_avg))
